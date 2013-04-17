@@ -26,6 +26,8 @@ char[] types = {
 };
 int[] vals = {
   -1, 1, -1, 1, 1, 'm', 'r', 'l', 1
+  
+ 
 };
 
 
@@ -50,7 +52,10 @@ XML xml;
 XML[] profiles; //topmost level, holds all profile types
 XML[] sets;    //level within profile, holds sets within one profile
 XML[] strokes;  //level within set, holds strokes within one set
+XML[] naviStrokes; //level to hold the navigational strokes
 int currentProfile = 0; //tracks profile within the profiles[] array
+
+Button textBigger, textSmaller;
 
 
 PFont f;  //for displaying text
@@ -69,7 +74,17 @@ int mode = START_MODE;  //mode stores the current mode of the gui
 Boolean done; //unused right now
 int type = 0; //within custom set?
 int strokeLoc = 0;
-int stdTextSize = 16;
+int stdTextSize = 24;
+
+int color1 = 0xff80c8ff;  ////backgroundfill
+int color2 = 0xff0090ff;  ////top and buttons
+int color3 = 0xffe6f4ff;  //cursor
+int colorT = 0xff000000;
+int colorTC = 0xff000000;
+
+char KEY_INPUT_CODE = '!',
+STROKE_INPUT_CODE = '#',
+END_INPUT_CODE = '$';
 
 public void stop(){
   println("Stopping");
@@ -77,9 +92,10 @@ public void stop(){
 }
 
 public void setup() {
-  xml = loadXML("test.xml");
+  xml = loadXML("Catalog.xml");
   profiles = xml.getChildren("profile"); //load profiles
-  sets = profiles[0].getChildren("set"); //start sets within standard profile
+  sets = profiles[currentProfile].getChildren("set"); //start sets within standard profile
+  naviStrokes = xml.getChildren("naviStroke");
 
   String portStringTemp = ""; //string to store serial port, helps resolve timing issues
   int count = 0;  //tells whether port has changed at all since startup
@@ -109,14 +125,17 @@ public void setup() {
       } //catches array out of bounds exception if there are no ports
     }
   }
-
+  
   println(Serial.list()[0]); //troubleshooting
+
+  
   port = new Serial(this, Serial.list()[0], 9600); //instantiate serial with proper port and speed 
 
   size(480, 272); //window size
   frame.setResizable(true);
   
-  f = createFont("Arial", stdTextSize, true); //create font
+  //println(PFont.list());
+  f = createFont("Roboto Light", 24, true); //create font
   textFont(f);  //set displaying font to the one we just created
   textAlign(CENTER, CENTER); //easiest to align text from the centers
   smooth();  //makes gui look nice
@@ -130,9 +149,11 @@ public void setup() {
   modesButtons.init(0, "Profile Change", 2); //last number correlates to mode selected when pressed
   modesButtons.init(1, "Keyboard", 3);
   modesButtons.init(2, "Custom Set", 4);
-
-  //wipe();
-  //background(255, 166, 0);
+  
+  textLeading(stdTextSize/4);
+  
+  textBigger = new Button("TEXT+", 1);
+  textSmaller = new Button("text-", 1);
 }
 
 ButtonGroup[] subOptions = new ButtonGroup[4];
@@ -140,9 +161,11 @@ ButtonGroup[] subOptions = new ButtonGroup[4];
 public void draw() {
   wipe();  //clears screen with backround color
 
+  textSmaller.display(3, (height - textSmaller.keyHeight - 3), color2);
+  textBigger.display((width - textBigger.keyWidth - 3), (height - textBigger.keyHeight  - 3), color2);
+
   if (mode == START_MODE) {
     layout.display();  //show the current layout
-    //keyboard.display();  //show the keyboard
     if (port.available() > 0) {  //if the controller switches layouts or moves into gui
       mode = layout.read();  //when layout is changed, mode stays, 
       //when controller looks to gui, mode is find mode mode
@@ -150,6 +173,7 @@ public void draw() {
   }
 
   else if (mode == FIND_MODE_MODE) { //first selection mode
+    modesButtons.display();
     mode = modesButtons.moveCursor();  //move the cursor between options, selection changes the mode
     if (mode == 255) mode = 0;
     //layout.displayNav();
@@ -184,17 +208,21 @@ public void draw() {
       done = true;
     }
     else if (mode == 2) {
+      profiles = xml.getChildren("profile");
+      profilesButtons = new ButtonGroup(profiles.length, width/2, 50);
       for (int i = 0; i < profilesButtons.getSize(); i++) {
         profilesButtons.init(  i, 
         profiles[i].getString("name"), 
         profiles[i].getInt("numSets"));
       }
     }
-    modesButtons.display();
+    
+    else if(mode == CUSTOM_SET_MODE){
+      strokeLoc = 0;
+    }
   }
 
   else if (mode == SELECT_PROFILE_MODE) {
-    //layout.displayNav();
     if (profilesButtons.moveCursor() > 0) {
       sendProfile(profilesButtons.pressInt());
     }
@@ -203,30 +231,15 @@ public void draw() {
   }
 
   else if (mode == KEYBOARD_MODE) {
-    //layout.displayCustom( "Move\nUp", 
-//    "Move\nDown", 
-//    "Move\nLeft", 
-//    "Move\nRight", 
-//    "Quit to\nNormal", 
-//    "Enter\nKey", 
-//    "Backspace \nKey", 
-//    "Select");
     keyboard.enterText();
-    //modesButtons.display();
     keyboard.display();
   }
 
   else if (mode == CUSTOM_SET_MODE) {
-    if (strokeLoc > 7) {
-      layout.createXML();
-      profiles = xml.getChildren("profile");
-      sendProfile(profiles.length - 1);
-      strokeLoc = 0;
-    }
     if (done) {
       layout.highlight(strokeLoc);
       type = strokeOptions.moveCursor();
-      layout.display();
+      layout.displayWithoutTop();
       strokeOptions.display();
       println(type);      
       if (type != -1 && type != 255) {
@@ -234,22 +247,26 @@ public void draw() {
         strokeOptions.clearCursor();
         done = false;
       }
+      else if(type == 255){
+        layout.clearStrokes();
+      }
     }
     else if (!done) {
-      println("moving cursor");
+      wipe();
       int press = subOptions[type].moveCursor();
       if (type == 0) {
-        println("I know it's setup");
         layout.setStroke(strokeLoc, 's', 1);
         strokeLoc++;
         done = true;
-        println("I'm leaving type == 0 stuff");
       }
       else {
-        layout.highlight(strokeLoc);
-        strokeOptions.display();
+        wipe();
+        if(type != 3){
+          layout.highlight(strokeLoc);
+          strokeOptions.display();
+          layout.displayWithoutTop();
+        }
         subOptions[type].display();
-        layout.display();
         if (press > 0) {
           while (subOptions[type].moveCursor () == press) {
           }
@@ -284,31 +301,53 @@ public void draw() {
         }
       }
     }
+    if (strokeLoc > 7) {
+      layout.createXML();
+      profiles = xml.getChildren("profile");
+      sendProfile(profiles.length - 1);
+      strokeLoc = 0;
+    }
   }
 }
 
-public void mouseMoved(){
-  if(mode == START_MODE){
-    keyboard.mouseCursor();
-  }
-  else if(mode == FIND_MODE_MODE){
-    modesButtons.mouseCursor(); 
-  }
+//void mouseMoved(){
+//  if(mode == START_MODE){
+//    keyboard.mouseCursor();
+//  }
+//  else if(mode == FIND_MODE_MODE){
+//    modesButtons.mouseCursor(); 
+//  }
+//  else if(mode == SELECT_PROFILE_MODE){
+//    profilesButtons.mouseCursor();
+//  }
+//  else if(mode == KEYBOARD_MODE){
+//    keyboard.mouseCursor();
+//  }
+//  else if(mode == CUSTOM_SET_MODE){
+//    strokeOptions.mouseCursor();
+//    if(!done){
+//      subOptions[type].moveCursor();
+//    }
+//  }
+//}
+//
+
+public void mouseClicked(){
+  if(textBigger.isIn(mouseX, mouseY)) stdTextSize++;
+  else if(textSmaller.isIn(mouseX, mouseY)) stdTextSize--;
+  textSize(stdTextSize);
 }
 
 public void sendProfile(int inProfile) {
   println("Sending profile: " + inProfile);
   sets = profiles[inProfile].getChildren("set");
+  port.write(STROKE_INPUT_CODE); //start code
   for (int i = 0; i < profiles[inProfile].getInt("numSets"); i++) {
     sendSet(i);
   }
   currentProfile = inProfile;
-  
-  while(port.available() == 0){}
-  delay(1000);
-  while(port.available() > 0){
-    print(PApplet.parseChar(port.read()));
-  }
+  port.write(END_INPUT_CODE); //stop code
+  layout.reset();
 }
 
 public void sendSet(int inSet) {
@@ -339,9 +378,9 @@ public void sendSet(int inSet) {
 
 
 public void wipe() {
-  fill(255, 166, 0);
+  fill(color1);
   rect(0, 0, displayWidth, displayHeight);
-  fill(255);
+  fill(colorT);
 //  line(width/2, 0, width/2, height);
 //  line(0, height/2, width, height/2);
 }
@@ -354,7 +393,7 @@ public void wipe() {
   int value;
   int x;
   int y;
-  int keyHeight = 28;
+  int keyHeight = stdTextSize * 3 / 2;
   int keySpace = 3;
   int keyWidth;
   int arrayLocation;
@@ -376,11 +415,15 @@ public void wipe() {
     else if(cover.equals("Right")) keyWidth = keyHeight;
     else if(cover.equals("Up")) keyWidth = 3*keyHeight + 2*keySpace;
     else if(cover.length() < 1) keyWidth = 0;
-    else keyWidth = PApplet.parseInt(textWidth(cover) * 1.05f);
+    else keyWidth = PApplet.parseInt(textWidth(cover) + stdTextSize/2);
   }
 
   public int getWidth() {
     return keyWidth;
+  }
+  
+  public int getHeight(){
+    return keyHeight;
   }
 
   public boolean isIn(int inX, int inY){
@@ -394,7 +437,7 @@ public void wipe() {
     int tSize = stdTextSize;
     fill(inColor);
     rect(inX,inY,keyWidth,keyHeight, 5);
-    fill(255);
+    fill(colorT);
     textSize(stdTextSize);
     while(textWidth(cover) > (keyWidth * .975f)){
       tSize--;
@@ -408,7 +451,21 @@ public void wipe() {
     int tSize = stdTextSize;
     fill(inColor);
     rect( x, y , keyWidth, keyHeight, 5);
-    fill(255);
+    fill(colorT);
+    textSize(stdTextSize);
+    while(textWidth(cover) > (keyWidth* .975f)){
+      tSize--;
+      textSize(tSize);
+    }
+    text(cover, x + (keyWidth/2), y + (keyHeight/2));
+    textSize(stdTextSize);
+  }
+  
+  public void displayC(int inColor) { //for cursor purposes
+    int tSize = stdTextSize;
+    fill(inColor);
+    rect( x, y , keyWidth, keyHeight, 5);
+    fill(colorTC);
     textSize(stdTextSize);
     while(textWidth(cover) > (keyWidth* .975f)){
       tSize--;
@@ -420,7 +477,7 @@ public void wipe() {
 
   public void press(){
     if(cover.equals("Done")){
-      sendProfile(profilesButtons.pressInt());
+      sendProfile(currentProfile);
       mode = 0;
     }
     else port.write(value);
@@ -473,7 +530,7 @@ class ButtonGroup {
     cursor = buttons[cursorLoc];
     noStroke();
     smooth();
-    fill(color(255, 166, 0));
+    fill(color1);
     //    rect(x-10, y-10, 1000, 100);
     int trackX = 0;
     for(int i = 0; i < buttons.length; i++){
@@ -482,10 +539,10 @@ class ButtonGroup {
     trackX = x - (trackX / 2);
     int trackY = y;
     for (int i = 0; i < buttons.length; i++) {
-      buttons[i].display(trackX, trackY, color(84, 14, 176));
+      buttons[i].display(trackX, trackY, color2);
       trackX += buttons[i].getWidth() + 5;
     }
-    cursor.display(color(0, 191, 57));
+    cursor.displayC(color3);
   }
 
   public void mouseCursor() {
@@ -516,29 +573,43 @@ class ButtonGroup {
     x = width/2;
   }
 
+  public int findStrokeLocation(char inChar){
+    int num = 0;
+    switch(inChar) {
+      case ('u'): num = 0; break;
+      case ('d'): num = 1; break;
+      case ('l'): num = 2; break;
+      case ('r'): num = 3; break;
+      case ('U'): num = 4; break;
+      case ('D'): num = 5; break;
+      case ('L'): num = 6; break;
+      case ('R'): num = 7; break;
+    }
+    return num;
+  }
+  
   public int moveCursor() {
-    char in = ' ';
+    int index, val;
+    char type;
     if (port.available() > 0) { 
-      in = port.readChar();
-      if (in == 'r') {
-        cursorLoc++;
+      index = findStrokeLocation(port.readChar());
+      
+      String typeString = naviStrokes[index].getString("type");
+      type = typeString.charAt(0);
+      
+      String valString = naviStrokes[index].getString("value");
+      val = PApplet.parseInt(valString);
+      
+      if (type == 'x') {
+        cursorLoc += val;
       }
-      else if (in == 'l') {  
-        cursorLoc--;
-      }
-      else if (in == 'R') {
+      else if (type == 'c'){
         println(cursor.pressInt());
         return cursor.pressInt();
       }
-      //      else if (in == 'd') {
-      //        return 'd';
-      //      }
-      //      else if (in == 'u') {
-      //        return 'u';
-      //      }
-      else if (in == 'U') {
+      else if (type == 's'){
         sendProfile(0);
-        //mode = 0;
+        mode = 0;
         return 255;
       }
       cursorLoc = (cursorLoc + buttons.length) % buttons.length;
@@ -585,11 +656,11 @@ class Keyboard extends ButtonGroup{
   int cols = 15;
   int curR = 2;
   int curC = 7;
-  int keySize = 28;
+  int keySize = stdTextSize * 3 / 2;
   int keySpace = 3;
   String[][] coverList = {
     {
-      "`", "", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "Bksp"
+      "`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "Bksp", ""
     }
     , 
     {
@@ -611,7 +682,7 @@ class Keyboard extends ButtonGroup{
 
   int[][] valueList = {
     {
-      '`', -1, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 178
+      '`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 178, -1
     }
     , 
     {
@@ -655,6 +726,7 @@ class Keyboard extends ButtonGroup{
   }
 
   public void press() {
+    port.write(KEY_INPUT_CODE); //keyboard start code
     cursor.press();
   }
 
@@ -680,49 +752,49 @@ class Keyboard extends ButtonGroup{
     wipe();
     noStroke();
     smooth();
-    fill(color(255, 166, 0));
+    fill(color1);
     //    rect(x-10, y-10, 1000, 1000);
     int trackX = PApplet.parseInt(x - ((PApplet.parseFloat(cols/2) + .5f) * (keySize + keySpace)));
     int trackY = PApplet.parseInt(y - ((PApplet.parseFloat(rows/2) + .5f) * (keySize + keySpace)));
     for (int i = 0; i < rows; i++) {
       for (int j = 0; j < cols; j++) {
-        keys[i][j].display(trackX, trackY, color(84, 14, 176));
+        keys[i][j].display(trackX, trackY, color2);
         if (keys[i][j].getWidth() != 0) trackX += keys[i][j].getWidth() + keySpace;
       }
       trackY += (keySize + keySpace);
       trackX = PApplet.parseInt(x - ((PApplet.parseFloat(cols/2) + .5f) * (keySize + keySpace)));
     }
-    cursor.display(color(0, 191, 57));
+    cursor.displayC(color3);
   }
 
-  public int moveCursor() {
-    char in = ' ';
-    if (port.available() > 0) { 
-      in = port.readChar();
-      if (in == 'r') {
-        this.moveCursor(1, 0);
-      }
-      else if (in == 'l') {  
-        this.moveCursor(-1, 0);
-      }
-      else if (in == 'u') {  
-        this.moveCursor(0, 1);
-      }
-      else if (in == 'd') {  
-        this.moveCursor(0, -1);
-      }
-      else if (in == 'R') {
-        println(cursor.pressInt());
-        return cursor.pressInt();
-      }
-      else if (in == 'U') {
-        sendProfile(0);
-        //mode = 0;
-        return 0;
-      }
-    }
-    return -1;
-  }
+//  int moveCursor() {
+//    char in = ' ';
+//    if (port.available() > 0) { 
+//      in = port.readChar();
+//      if (in == 'r') {
+//        this.moveCursor(1, 0);
+//      }
+//      else if (in == 'l') {  
+//        this.moveCursor(-1, 0);
+//      }
+//      else if (in == 'u') {  
+//        this.moveCursor(0, 1);
+//      }
+//      else if (in == 'd') {  
+//        this.moveCursor(0, -1);
+//      }
+//      else if (in == 'R') {
+//        println(cursor.pressInt());
+//        return cursor.pressInt();
+//      }
+//      else if (in == 'U') {
+//        sendProfile(0);
+//        //mode = 0;
+//        return 0;
+//      }
+//    }
+//    return -1;
+//  }
 
   public void moveCursor(int moveX, int moveY) {
     curC += moveX;
@@ -738,39 +810,81 @@ class Keyboard extends ButtonGroup{
     }
   }
 
+  public int findStrokeLocation(char inChar){
+    int num = 0;
+    switch(inChar) {
+      case ('u'): num = 0; break;
+      case ('d'): num = 1; break;
+      case ('l'): num = 2; break;
+      case ('r'): num = 3; break;
+      case ('U'): num = 4; break;
+      case ('D'): num = 5; break;
+      case ('L'): num = 6; break;
+      case ('R'): num = 7; break;
+    }
+    return num;
+  }
+
   public void enterText() {
-    char in = ' ';
+    int index, val;
+    char type;
     if (port.available() > 0) { 
-      in = port.readChar();
-      switch(in) {
-      case 'u':
-        keyboard.moveCursor(0, 1);
+      index = findStrokeLocation(port.readChar());
+      
+      String typeString = naviStrokes[index].getString("type");
+      type = typeString.charAt(0);
+      
+      String valString = naviStrokes[index].getString("value");
+      val = PApplet.parseInt(valString);
+      
+      switch(type) {
+      case 'y':
+        keyboard.moveCursor(0, val);
         break;
-      case 'd':
-        keyboard.moveCursor(0, -1);
+      case 'x':
+        keyboard.moveCursor(val, 0);
         break;
-      case 'l':
-        keyboard.moveCursor(-1, 0);
-        break;
-      case 'r':
-        keyboard.moveCursor(1, 0);
-        break;
-      case 'U':
+      case 's':
         mode = 0;
-        sendProfile(0);
+        sendProfile(currentProfile);
         break;
-      case 'D':
-        port.write(176);
-        break;
-      case 'L':
-        port.write(178);
-        break;
-      case 'R':
+      case 'c':
         keyboard.press();
         break;
       }
     }
   }
+  
+  public int moveCursor() {
+    int index, val;
+    char type;
+    if (port.available() > 0) { 
+      index = findStrokeLocation(port.readChar());
+      
+      String typeString = naviStrokes[index].getString("type");
+      type = typeString.charAt(0);
+      
+      String valString = naviStrokes[index].getString("value");
+      val = PApplet.parseInt(valString);
+      
+      switch(type) {
+      case 'y':
+        keyboard.moveCursor(0, val);
+        break;
+      case 'x':
+        keyboard.moveCursor(val, 0);
+        break;
+      case 's':
+        sendProfile(0);
+        return 255;
+      case 'c':
+        println(cursor.pressInt());
+        return cursor.pressInt();
+      }
+    }
+    return -1;
+  }
+  
 }
 
 class Layout {
@@ -779,7 +893,8 @@ class Layout {
   int y;
   char[] types = new char[8];
   int[] vals = new int[9];
-  int d = 50;
+  int dx = width/8;
+  int dy = height/6;
   int currentSet;
   int newSets = 0;
   XML customProf;
@@ -791,7 +906,7 @@ class Layout {
     }
     println("inX: " + inX);
     println("x: " + x);
-    x = inX - (3 * d);
+    x = inX - (3 * dx);
     y = inY;
   }
 
@@ -832,15 +947,12 @@ class Layout {
 
   public void displayCustom(String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7) {
     center();
-    fill(255, 166, 0);
-    noStroke();
-    //    rect(x-d, y-d, 1000, 1000);
-    fill(255);
-    stroke(0);
+    fill(colorT);
+    //stroke(0);
     ellipseMode(CENTER);
     ellipse(x(1), y(2), 15, 15);
     ellipse(x(5), y(2), 15, 15);
-    fill(0);
+    fill(colorT);
     textSize(stdTextSize);
     text(s0, x(1), y(1));
     text(s1, x(1), y(3));
@@ -855,6 +967,15 @@ class Layout {
   public void center(){
     x = width / 2;
     y = height / 2;
+    dx = width / 8;
+    dy = height / 5;
+    //stroke(255);
+//    for(int i = 0; i < 8; i++){
+//      line(x(i), 0, x(i), height);
+//    }
+//    for(int i = 0; i < 5; i++){
+//      line(0, y(i), width, y(i));
+//    }
   }
 
   public void clear(){
@@ -883,6 +1004,16 @@ class Layout {
     vals[loc] = inVal;
     println("layout.setStroke(): " + types[loc] + ", " + vals[loc]);
   }
+  
+  public void clearStrokes(){
+    strokeLoc = 0;
+    for(int i = 0; i < types.length; i++){
+      types[i] = 0;
+    }
+    for(int i = 0; i < vals.length; i++){
+      vals[i] = 0;
+    }
+  }
     
   public void createXML(){
     println("XML CREATION");
@@ -907,20 +1038,33 @@ class Layout {
     
   }
 
+  public void reset(){
+    currentSet = 0;
+  }
+
   public void display() {
     center();
-    fill(255, 166, 0);
+    textLeading(stdTextSize);
+    fill(color1);
     noStroke();
     //    rect(x-d, y-d, 1000, 1000);
-    fill(255);
-    stroke(0);
+    fill(color2);
+    //stroke(0);
     ellipseMode(CENTER);
     ellipse(x(1), y(2), 15, 15);
     ellipse(x(5), y(2), 15, 15);
-    fill(0);
-    text("Profile: " + profiles[currentProfile].getString("name"), x(0), y(0));
-    text("Set: " + sets[currentSet].getString("name"), x(3), y(0));
-    text("Speed: " + sets[currentSet].getInt("speed"), x(6), y(0));
+    fill(color2);
+    noStroke();
+    rect(3, 3, width - 6, y(.375f), 3);
+    fill(colorT);
+    textAlign(LEFT, BOTTOM);
+    text("Profile: " + profiles[currentProfile].getString("name"), 20, y(.375f)/2);
+    textAlign(RIGHT, BOTTOM);
+    text("Speed: " + sets[currentSet].getInt("speed"), width - 20, y(.375f)/2);
+    textAlign(CENTER, BOTTOM);
+    text("Set: " + sets[currentSet].getString("name"), x(3), y(.375f) - 5);
+    textAlign(CENTER, CENTER);
+    fill(colorT);
     text(findString(0), x(1), y(1));
     text(findString(1), x(1), y(3));
     text(findString(2), x(0), y(2));
@@ -929,36 +1073,59 @@ class Layout {
     text(findString(5), x(5), y(3));
     text(findString(6), x(4), y(2));
     text(findString(7), x(6), y(2));
+    center();
+  }
+  
+  public void displayWithoutTop() {
+    center();
+    fill(color1);
+    noStroke();
+    //    rect(x-d, y-d, 1000, 1000);
+    fill(colorT);
+    //stroke(0);
+    ellipseMode(CENTER);
+    ellipse(x(1), y(2), 15, 15);
+    ellipse(x(5), y(2), 15, 15);
+    fill(colorT);
+    text(findString(0), x(1), y(1));
+    text(findString(1), x(1), y(3));
+    text(findString(2), x(0), y(2));
+    text(findString(3), x(2), y(2));
+    text(findString(4), x(5), y(1));
+    text(findString(5), x(5), y(3));
+    text(findString(6), x(4), y(2));
+    text(findString(7), x(6), y(2));
+    center();
   }
 
   public void highlight(int inLoc) {
     rectMode(CENTER);
     noStroke();
-    fill(color(0, 191, 57));
+    fill(color3);
     switch (inLoc) {
     case 0:
-      rect(x(1), y(1), d, d, 5);
+      rect(x(1), y(1), dx, dy, 5);
       break;
     case 1:
-      rect(x(1), y(3), d, d, 5);
+      rect(x(1), y(3), dx, dy, 5);
       break;
     case 2:
-      rect(x(0), y(2), d, d, 5);
+      rect(x(0), y(2), dx, dy, 5);
       break;
     case 3:
-      rect(x(2), y(2), d, d, 5);
+      rect(x(2), y(2), dx, dy, 5);
       break;
     case 4:
-      rect(x(5), y(1), d, d, 5);
+      rect(x(5), y(1), dx, dy, 5);
       break;
     case 5:
-      rect(x(5), y(3), d, d, 5);
+      rect(x(5), y(3), dx, dy, 5);
       break;
     case 6:
-      rect(x(4), y(2), d, d, 5);
+      rect(x(4), y(2), dx, dy, 5);
       break;
     case 7:
-      rect(x(6), y(2), d, d, 5);
+      rect(x(6), y(2), dx, dy, 5);
       break;
     }
     rectMode(CORNER);
@@ -966,12 +1133,12 @@ class Layout {
 
     public float x(float num) {
       num -= 3;
-      return x + (num * d);
+      return x + (num * dx);
     }
 
     public float y(float num) {
       num -= 1.5f;
-      return y + (num * d);
+      return y + (num * dy);
     }
 
     public String findString(int num) {

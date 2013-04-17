@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+
+<data>
+	<naviStroke type = "y" value = "1"></naviStroke>
+	<naviStroke type = "y" value = "-1"></naviStroke>
+	<naviStroke type = "x" value = "-1"></naviStroke>
+	<naviStroke type = "x" value = "1"></naviStroke>
+	<naviStroke type = "s" value = "1"></naviStroke>
+	<naviStroke type = "c" value = "1"></naviStroke>
+	<naviStroke type = "s" value = "1"></naviStroke>
+	<naviStroke type = "c" value = "1"></naviStroke>
+
+
+	<profile name ="Normal" numSets="4">
+		<set name ="Fast Mouse" speed="1">
+			<stroke type = "y" value = "-1"></stroke>
+			<stroke type = "y" value = "1"></stroke>
+			<stroke type = "x" value = "-1"></stroke>
+			<stroke type = "x" value = "1"></stroke>
+			<stroke type = "s" value = "1"></stroke>
+			<stroke type = "c" value = "m"></stroke>
+			<stroke type = "C" value = "r"></stroke>
+			<stroke type = "C" value = "l"></stroke>
+		</set>
+		<set name="Medium Mouse" speed="2">
+			<stroke type = "y" value = "-1"></stroke>
+			<stroke type = "y" value = "1"></stroke>
+			<stroke type = "x" value = "-1"></stroke>
+			<stroke type = "x" value = "1"></stroke>
+			<stroke type = "s" value = "1"></stroke>
+			<stroke type = "c" value = "m"></stroke>
+			<stroke type = "C" value = "r"></stroke>
+			<stroke type = "C" value = "l"></stroke>
+		</set>
+		<set name="Slow Mouse" speed="4">
+			<stroke type = "y" value = "-1"></stroke>
+			<stroke type = "y" value = "1"></stroke>
+			<stroke type = "x" value = "-1"></stroke>
+			<stroke type = "x" value = "1"></stroke>
+			<stroke type = "s" value = "1"></stroke>
+			<stroke type = "c" value = "m"></stroke>
+			<stroke type = "C" value = "r"></stroke>
+			<stroke type = "C" value = "l"></stroke>
+		</set>
+		<set name="Super Slow Mouse" speed="8">
+			<stroke type = "y" value = "-1"></stroke>
+			<stroke type = "y" value = "1"></stroke>
+			<stroke type = "x" value = "-1"></stroke>
+			<stroke type = "x" value = "1"></stroke>
+			<stroke type = "s" value = "1"></stroke>
+			<stroke type = "c" value = "m"></stroke>
+			<stroke type = "C" value = "r"></stroke>
+			<stroke type = "C" value = "l"></stroke>
+		</set>
+	</profile>
+
+	<profile name ="Arrows" numSets="2">
+		<set name ="Arrow Keys" speed="2">
+			<stroke type = "K" value = "218"></stroke>
+			<stroke type = "K" value = "217"></stroke>
+			<stroke type = "K" value = "216"></stroke>
+			<stroke type = "K" value = "215"></stroke>
+			<stroke type = "s" value = "1"></stroke>
+			<stroke type = "K" value = "176"></stroke>
+			<stroke type = "K" value = "p"></stroke>
+			<stroke type = "K" value = "32"></stroke>
+		</set>
+		<set name="Mouse" speed="2">
+			<stroke type = "y" value = "-1"></stroke>
+			<stroke type = "y" value = "1"></stroke>
+			<stroke type = "x" value = "-1"></stroke>
+			<stroke type = "x" value = "1"></stroke>
+			<stroke type = "s" value = "1"></stroke>
+			<stroke type = "c" value = "m"></stroke>
+			<stroke type = "C" value = "r"></stroke>
+			<stroke type = "C" value = "l"></stroke>
+		</set>
+	</profile>
+
+	<profile name ="Minecraft" numSets = "2">
+		<set name ="Look and Place" speed="2">
+			<stroke type = "y" value = "-1"></stroke>
+			<stroke type = "y" value = "1"></stroke>
+			<stroke type = "x" value = "-1"></stroke>
+			<stroke type = "x" value = "1"></stroke>
+			<stroke type = "s" value = "1"></stroke>
+			<stroke type = "K" value = "e"></stroke>
+			<stroke type = "C" value = "l"></stroke>
+			<stroke type = "C" value = "r"></stroke>
+		</set>
+		<set name ="Move" speed="2">
+			<stroke type = "K" value = "w"></stroke>
+			<stroke type = "K" value = "s"></stroke>
+			<stroke type = "x" value = "-1"></stroke>
+			<stroke type = "x" value = "1"></stroke>
+			<stroke type = "s" value = "1"></stroke>
+			<stroke type = "K" value = "177"></stroke>
+			<stroke type = "C" value = "l"></stroke>
+			<stroke type = "C" value = "r"></stroke>
+		</set>
+	</profile>
+
+	<profile name="WASD" numSets = "2">
+		<set name ="WASD Keys" speed="2">
+			<stroke type = "K" value = "w"></stroke>
+			<stroke type = "K" value = "s"></stroke>
+			<stroke type = "K" value = "a"></stroke>
+			<stroke type = "K" value = "d"></stroke>
+			<stroke type = "s" value = "1"></stroke>
+			<stroke type = "K" value = "176"></stroke>
+			<stroke type = "K" value = "p"></stroke>
+			<stroke type = "K" value = "32"></stroke>
+		</set>
+		<set name ="Mouse" speed="2">
+			<stroke type = "y" value = "-1"></stroke>
+			<stroke type = "y" value = "1"></stroke>
+			<stroke type = "x" value = "-1"></stroke>
+			<stroke type = "x" value = "1"></stroke>
+			<stroke type = "s" value = "1"></stroke>
+			<stroke type = "c" value = "m"></stroke>
+			<stroke type = "C" value = "r"></stroke>
+			<stroke type = "C" value = "l"></stroke>
+		</set>
+	</profile>
+</data>
+	

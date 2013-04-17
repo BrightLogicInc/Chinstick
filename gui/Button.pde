@@ -32,6 +32,10 @@
   int getWidth() {
     return keyWidth;
   }
+  
+  int getHeight(){
+    return keyHeight;
+  }
 
   boolean isIn(int inX, int inY){
     if(x < inX && inX < x + keyWidth && y < inY && inY < y + keyHeight) return true;
@@ -59,6 +63,20 @@
     fill(inColor);
     rect( x, y , keyWidth, keyHeight, 5);
     fill(colorT);
+    textSize(stdTextSize);
+    while(textWidth(cover) > (keyWidth* .975)){
+      tSize--;
+      textSize(tSize);
+    }
+    text(cover, x + (keyWidth/2), y + (keyHeight/2));
+    textSize(stdTextSize);
+  }
+  
+  void displayC(color inColor) { //for cursor purposes
+    int tSize = stdTextSize;
+    fill(inColor);
+    rect( x, y , keyWidth, keyHeight, 5);
+    fill(colorTC);
     textSize(stdTextSize);
     while(textWidth(cover) > (keyWidth* .975)){
       tSize--;

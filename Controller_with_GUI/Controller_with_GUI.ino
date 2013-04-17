@@ -53,32 +53,32 @@ int joyBankVals [4][9];
 char normalTypes[][9] = {  
   //lu,  ld,  ll,  lr,  ru,  rd,  rl,  rr
   {
-    'y', 'y', 'x', 'x', 's', 'c', 'C', 'C'    }
+    'y', 'y', 'x', 'x', 's', 'c', 'C', 'C'      }
   ,
   {
-    'y', 'y', 'x', 'x', 's', 'c', 'C', 'C'    }
+    'y', 'y', 'x', 'x', 's', 'c', 'C', 'C'      }
   ,
   {
-    'y', 'y', 'x', 'x', 's', 'c', 'C', 'C'    }
+    'y', 'y', 'x', 'x', 's', 'c', 'C', 'C'      }
   ,
   {
-    'y', 'y', 'x', 'x', 's', 'c', 'C', 'C'    }
+    'y', 'y', 'x', 'x', 's', 'c', 'C', 'C'      }
   , 
 };
 
 int normalVals[][9] =  {
   //  lu,  ld,  ll,  lr,  ru,  rd,  rl,  rr,  spd
   {  
-    -1,   1,  -1,   1,   1, 'm', 'r', 'l',    1                                  }
+    -1,   1,  -1,   1,   1, 'm', 'r', 'l',    1                                    }
   ,
   {  
-    -1,   1,  -1,   1,   1, 'm', 'r', 'l',    2                                  }
+    -1,   1,  -1,   1,   1, 'm', 'r', 'l',    2                                    }
   ,
   {  
-    -1,   1,  -1,   1,   1, 'm', 'r', 'l',    4                                  }
+    -1,   1,  -1,   1,   1, 'm', 'r', 'l',    4                                    }
   ,
   {  
-    -1,   1,  -1,   1,   1, 'm', 'r', 'l',    8                                  }
+    -1,   1,  -1,   1,   1, 'm', 'r', 'l',    8                                    }
   ,                            
 };
 
@@ -89,6 +89,10 @@ char modeKey = 'n'; //Stores current mode or set of Layouts
 int oldReading[8];
 int reading[8];
 
+const char KEY_INPUT_CODE = !,
+STROKE_INPUT_CODE = #,
+END_INPUT_CODE = $;
+
 void setup()
 {
   for(int a = 0; a <= 8; a++)
@@ -98,7 +102,7 @@ void setup()
   Mouse.begin(); //start mouse control
   Keyboard.begin(); //start keyboard control
   Serial.begin(9600); 
-  
+
   for(int q = 0; q < 3; q++) //blink LEDs three times to indicate ready
   {
     for(int i = 0; i < 4; i++){
@@ -112,7 +116,7 @@ void setup()
     }
     delay(250);
   }
-  
+
   changeBank(normalTypes, normalVals); //set bank to initial mode and layout
   ledGo(); //display current layout
 }
@@ -147,8 +151,10 @@ void findType() //figures out what to do and sends to that function
     (oldReading[6] == 0) && (oldReading[7] == 0)){
 
     offCount++;
-    if (offCount > 10000) 
-    {
+    if (offCount > 1000){ //runs after some time if nothing is pressed
+      if(joyBankVals[0][0] == 0){ //fail safe if read blank layout
+        changeBank(normalTypes, normalVals);
+      }
       letGoAll();  //fail safe, if nothing is pressed, the controller stops
       offCount = 0;
     }  
@@ -266,7 +272,7 @@ void modeSwitch(int valLocation)
   int b = 0;
   digitalWrite(ledPins[0], HIGH);
   char directions[8] = {
-    'u', 'd', 'l', 'r', 'U', 'D', 'L', 'R'  }; //for keyboard motion sent to gui
+    'u', 'd', 'l', 'r', 'U', 'D', 'L', 'R'    }; //for keyboard motion sent to gui
   boolean done = false;
 
   while (done == false) //waiting to recieve new sets
@@ -286,7 +292,7 @@ void modeSwitch(int valLocation)
       {
         Serial.write(directions[i]);
         delay(250);
-        if(i == 4){
+        if(normalTypes[0][i] == 's'){
           delay(500);
           if(!Serial.available()){
             done = true;
@@ -295,12 +301,17 @@ void modeSwitch(int valLocation)
       }
     }
 
-    if(Serial.available() == 1){  //if sent a keystroke, controller acts as keyboard input
-      Keyboard.write(Serial.read());
+    char inChar = Serial.read();
+
+    if(inChar == STROKE_INPUT_CODE){ //Start recieving a layout Code
+      readBank();
     }
 
-    else if(Serial.available() > 10){ //gui sent a layout
-      readBank();
+    else if(inChar == KEY_INPUT_CODE){  //if sent a keystroke, controller acts as keyboard input
+      Keyboard.write(Serial.read());
+    }
+    
+    else if(inChar == END_INPUT_CODE){
       done = true;
     }
   }
@@ -311,17 +322,19 @@ void readBank(){
   int set = 0;
   while(set < 4){
     for(int i = 0; i < 8; i++){
-      while(!Serial.available()){}
+      while(!Serial.available()){
+      }
       joyBankTypes[set][i] = Serial.read();
     }
     for(int i = 0; i < 9; i++){
-      while(!Serial.available()){}
+      while(!Serial.available()){
+      }
       joyBankVals[set][i] = Serial.read();
     }
     if(Serial.available() > 10){ 
       set++;
     }
-    else {
+    else if(Serial.available() < 10) {
       for(int i = set + 1; i < 4; i++) {
         for(int j = 0; j < 8; j++){
           joyBankTypes[i][j] = 0;
@@ -1068,4 +1081,5 @@ void ledFlash(int a)
 //  {  
 //    0,   0,   0,   0,   0,   0,   0,   0,    0                                }
 //};
+
 

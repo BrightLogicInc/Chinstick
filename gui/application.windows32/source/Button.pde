@@ -4,7 +4,7 @@
   int value;
   int x;
   int y;
-  int keyHeight = 28;
+  int keyHeight = stdTextSize * 3 / 2;
   int keySpace = 3;
   int keyWidth;
   int arrayLocation;
@@ -26,11 +26,15 @@
     else if(cover.equals("Right")) keyWidth = keyHeight;
     else if(cover.equals("Up")) keyWidth = 3*keyHeight + 2*keySpace;
     else if(cover.length() < 1) keyWidth = 0;
-    else keyWidth = int(textWidth(cover) * 1.05);
+    else keyWidth = int(textWidth(cover) + stdTextSize/2);
   }
 
   int getWidth() {
     return keyWidth;
+  }
+  
+  int getHeight(){
+    return keyHeight;
   }
 
   boolean isIn(int inX, int inY){
@@ -44,7 +48,7 @@
     int tSize = stdTextSize;
     fill(inColor);
     rect(inX,inY,keyWidth,keyHeight, 5);
-    fill(255);
+    fill(colorT);
     textSize(stdTextSize);
     while(textWidth(cover) > (keyWidth * .975)){
       tSize--;
@@ -58,7 +62,21 @@
     int tSize = stdTextSize;
     fill(inColor);
     rect( x, y , keyWidth, keyHeight, 5);
-    fill(255);
+    fill(colorT);
+    textSize(stdTextSize);
+    while(textWidth(cover) > (keyWidth* .975)){
+      tSize--;
+      textSize(tSize);
+    }
+    text(cover, x + (keyWidth/2), y + (keyHeight/2));
+    textSize(stdTextSize);
+  }
+  
+  void displayC(color inColor) { //for cursor purposes
+    int tSize = stdTextSize;
+    fill(inColor);
+    rect( x, y , keyWidth, keyHeight, 5);
+    fill(colorTC);
     textSize(stdTextSize);
     while(textWidth(cover) > (keyWidth* .975)){
       tSize--;
@@ -70,7 +88,7 @@
 
   void press(){
     if(cover.equals("Done")){
-      sendProfile(profilesButtons.pressInt());
+      sendProfile(currentProfile);
       mode = 0;
     }
     else port.write(value);

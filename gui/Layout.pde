@@ -115,6 +115,16 @@ class Layout {
     vals[loc] = inVal;
     println("layout.setStroke(): " + types[loc] + ", " + vals[loc]);
   }
+  
+  void clearStrokes(){
+    strokeLoc = 0;
+    for(int i = 0; i < types.length; i++){
+      types[i] = 0;
+    }
+    for(int i = 0; i < vals.length; i++){
+      vals[i] = 0;
+    }
+  }
     
   void createXML(){
     println("XML CREATION");
@@ -139,12 +149,17 @@ class Layout {
     
   }
 
+  void reset(){
+    currentSet = 0;
+  }
+
   void display() {
     center();
+    textLeading(stdTextSize);
     fill(color1);
     noStroke();
     //    rect(x-d, y-d, 1000, 1000);
-    fill(colorT);
+    fill(color2);
     //stroke(0);
     ellipseMode(CENTER);
     ellipse(x(1), y(2), 15, 15);

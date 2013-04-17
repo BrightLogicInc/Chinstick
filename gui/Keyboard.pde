@@ -76,6 +76,7 @@ class Keyboard extends ButtonGroup{
   }
 
   void press() {
+    port.write(KEY_INPUT_CODE); //keyboard start code
     cursor.press();
   }
 
@@ -113,7 +114,7 @@ class Keyboard extends ButtonGroup{
       trackY += (keySize + keySpace);
       trackX = int(x - ((float(cols/2) + .5) * (keySize + keySpace)));
     }
-    cursor.display(color3);
+    cursor.displayC(color3);
   }
 
 //  int moveCursor() {
@@ -195,7 +196,7 @@ class Keyboard extends ButtonGroup{
         break;
       case 's':
         mode = 0;
-        sendProfile(0);
+        sendProfile(currentProfile);
         break;
       case 'c':
         keyboard.press();

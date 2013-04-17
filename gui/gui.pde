@@ -37,6 +37,8 @@ XML[] strokes;  //level within set, holds strokes within one set
 XML[] naviStrokes; //level to hold the navigational strokes
 int currentProfile = 0; //tracks profile within the profiles[] array
 
+Button textBigger, textSmaller;
+
 
 PFont f;  //for displaying text
 
@@ -54,12 +56,17 @@ int mode = START_MODE;  //mode stores the current mode of the gui
 Boolean done; //unused right now
 int type = 0; //within custom set?
 int strokeLoc = 0;
-int stdTextSize = 20;
+int stdTextSize = 24;
 
-color color1 = #4f77e4;  //color(255, 0, 0); //backgroundfill(colorT)
-color color2 = #410baa;  //color(84, 14, 176);        //top and buttons
-color color3 = #00a18a;  //color(0, 191, 57);        //cursor
-color colorT = #71e0d1;
+color color1 = #80c8ff;  ////backgroundfill
+color color2 = #0090ff;  ////top and buttons
+color color3 = #e6f4ff;  //cursor
+color colorT = #000000;
+color colorTC = #000000;
+
+char KEY_INPUT_CODE = '!',
+STROKE_INPUT_CODE = '#',
+END_INPUT_CODE = '$';
 
 void stop(){
   println("Stopping");
@@ -67,7 +74,7 @@ void stop(){
 }
 
 void setup() {
-  xml = loadXML("test.xml");
+  xml = loadXML("Catalog.xml");
   profiles = xml.getChildren("profile"); //load profiles
   sets = profiles[currentProfile].getChildren("set"); //start sets within standard profile
   naviStrokes = xml.getChildren("naviStroke");
@@ -100,14 +107,17 @@ void setup() {
       } //catches array out of bounds exception if there are no ports
     }
   }
-
+  
   println(Serial.list()[0]); //troubleshooting
+
+  
   port = new Serial(this, Serial.list()[0], 9600); //instantiate serial with proper port and speed 
 
   size(480, 272); //window size
   frame.setResizable(true);
   
-  f = createFont("Arial", stdTextSize, true); //create font
+  //println(PFont.list());
+  f = createFont("Roboto Light", 24, true); //create font
   textFont(f);  //set displaying font to the one we just created
   textAlign(CENTER, CENTER); //easiest to align text from the centers
   smooth();  //makes gui look nice
@@ -122,14 +132,19 @@ void setup() {
   modesButtons.init(1, "Keyboard", 3);
   modesButtons.init(2, "Custom Set", 4);
   
-  textSize(stdTextSize);
-  textLeading(stdTextSize + 5);
+  textLeading(stdTextSize/4);
+  
+  textBigger = new Button("TEXT+", 1);
+  textSmaller = new Button("text-", 1);
 }
 
 ButtonGroup[] subOptions = new ButtonGroup[4];
 
 void draw() {
   wipe();  //clears screen with backround color
+
+  textSmaller.display(3, (height - textSmaller.keyHeight - 3), color2);
+  textBigger.display((width - textBigger.keyWidth - 3), (height - textBigger.keyHeight  - 3), color2);
 
   if (mode == START_MODE) {
     layout.display();  //show the current layout
@@ -175,11 +190,17 @@ void draw() {
       done = true;
     }
     else if (mode == 2) {
+      profiles = xml.getChildren("profile");
+      profilesButtons = new ButtonGroup(profiles.length, width/2, 50);
       for (int i = 0; i < profilesButtons.getSize(); i++) {
         profilesButtons.init(  i, 
         profiles[i].getString("name"), 
         profiles[i].getInt("numSets"));
       }
+    }
+    
+    else if(mode == CUSTOM_SET_MODE){
+      strokeLoc = 0;
     }
   }
 
@@ -197,12 +218,6 @@ void draw() {
   }
 
   else if (mode == CUSTOM_SET_MODE) {
-    if (strokeLoc > 7) {
-      layout.createXML();
-      profiles = xml.getChildren("profile");
-      sendProfile(profiles.length - 1);
-      strokeLoc = 0;
-    }
     if (done) {
       layout.highlight(strokeLoc);
       type = strokeOptions.moveCursor();
@@ -214,17 +229,17 @@ void draw() {
         strokeOptions.clearCursor();
         done = false;
       }
+      else if(type == 255){
+        layout.clearStrokes();
+      }
     }
     else if (!done) {
-      println("moving cursor");
       wipe();
       int press = subOptions[type].moveCursor();
       if (type == 0) {
-        println("I know it's setup");
         layout.setStroke(strokeLoc, 's', 1);
         strokeLoc++;
         done = true;
-        println("I'm leaving type == 0 stuff");
       }
       else {
         wipe();
@@ -268,6 +283,12 @@ void draw() {
         }
       }
     }
+    if (strokeLoc > 7) {
+      layout.createXML();
+      profiles = xml.getChildren("profile");
+      sendProfile(profiles.length - 1);
+      strokeLoc = 0;
+    }
   }
 }
 
@@ -292,19 +313,23 @@ void draw() {
 //  }
 //}
 //
-//void mouseClicked(){
-//  stdTextSize += 1;
-//  println("click: " + stdTextSize);
-//  textSize(stdTextSize);
-//}
+
+void mouseClicked(){
+  if(textBigger.isIn(mouseX, mouseY)) stdTextSize++;
+  else if(textSmaller.isIn(mouseX, mouseY)) stdTextSize--;
+  textSize(stdTextSize);
+}
 
 void sendProfile(int inProfile) {
   println("Sending profile: " + inProfile);
   sets = profiles[inProfile].getChildren("set");
+  port.write(STROKE_INPUT_CODE); //start code
   for (int i = 0; i < profiles[inProfile].getInt("numSets"); i++) {
     sendSet(i);
   }
   currentProfile = inProfile;
+  port.write(END_INPUT_CODE); //stop code
+  layout.reset();
 }
 
 void sendSet(int inSet) {

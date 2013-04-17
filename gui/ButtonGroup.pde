@@ -35,7 +35,7 @@ class ButtonGroup {
       buttons[i].display(trackX, trackY, color2);
       trackX += buttons[i].getWidth() + 5;
     }
-    cursor.display(color3);
+    cursor.displayC(color3);
   }
 
   void mouseCursor() {
@@ -67,7 +67,7 @@ class ButtonGroup {
   }
 
   int findStrokeLocation(char inChar){
-    int num = 128;
+    int num = 0;
     switch(inChar) {
       case ('u'): num = 0; break;
       case ('d'): num = 1; break;
@@ -102,7 +102,7 @@ class ButtonGroup {
       }
       else if (type == 's'){
         sendProfile(0);
-        //mode = 0;
+        mode = 0;
         return 255;
       }
       cursorLoc = (cursorLoc + buttons.length) % buttons.length;

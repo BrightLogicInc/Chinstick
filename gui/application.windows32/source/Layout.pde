@@ -4,7 +4,8 @@ class Layout {
   int y;
   char[] types = new char[8];
   int[] vals = new int[9];
-  int d = 50;
+  int dx = width/8;
+  int dy = height/6;
   int currentSet;
   int newSets = 0;
   XML customProf;
@@ -16,7 +17,7 @@ class Layout {
     }
     println("inX: " + inX);
     println("x: " + x);
-    x = inX - (3 * d);
+    x = inX - (3 * dx);
     y = inY;
   }
 
@@ -57,15 +58,12 @@ class Layout {
 
   void displayCustom(String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7) {
     center();
-    fill(255, 166, 0);
-    noStroke();
-    //    rect(x-d, y-d, 1000, 1000);
-    fill(255);
-    stroke(0);
+    fill(colorT);
+    //stroke(0);
     ellipseMode(CENTER);
     ellipse(x(1), y(2), 15, 15);
     ellipse(x(5), y(2), 15, 15);
-    fill(0);
+    fill(colorT);
     textSize(stdTextSize);
     text(s0, x(1), y(1));
     text(s1, x(1), y(3));
@@ -80,6 +78,15 @@ class Layout {
   void center(){
     x = width / 2;
     y = height / 2;
+    dx = width / 8;
+    dy = height / 5;
+    //stroke(255);
+//    for(int i = 0; i < 8; i++){
+//      line(x(i), 0, x(i), height);
+//    }
+//    for(int i = 0; i < 5; i++){
+//      line(0, y(i), width, y(i));
+//    }
   }
 
   void clear(){
@@ -108,6 +115,16 @@ class Layout {
     vals[loc] = inVal;
     println("layout.setStroke(): " + types[loc] + ", " + vals[loc]);
   }
+  
+  void clearStrokes(){
+    strokeLoc = 0;
+    for(int i = 0; i < types.length; i++){
+      types[i] = 0;
+    }
+    for(int i = 0; i < vals.length; i++){
+      vals[i] = 0;
+    }
+  }
     
   void createXML(){
     println("XML CREATION");
@@ -132,20 +149,33 @@ class Layout {
     
   }
 
+  void reset(){
+    currentSet = 0;
+  }
+
   void display() {
     center();
-    fill(255, 166, 0);
+    textLeading(stdTextSize);
+    fill(color1);
     noStroke();
     //    rect(x-d, y-d, 1000, 1000);
-    fill(255);
-    stroke(0);
+    fill(color2);
+    //stroke(0);
     ellipseMode(CENTER);
     ellipse(x(1), y(2), 15, 15);
     ellipse(x(5), y(2), 15, 15);
-    fill(0);
-    text("Profile: " + profiles[currentProfile].getString("name"), x(0), y(0));
-    text("Set: " + sets[currentSet].getString("name"), x(3), y(0));
-    text("Speed: " + sets[currentSet].getInt("speed"), x(6), y(0));
+    fill(color2);
+    noStroke();
+    rect(3, 3, width - 6, y(.375), 3);
+    fill(colorT);
+    textAlign(LEFT, BOTTOM);
+    text("Profile: " + profiles[currentProfile].getString("name"), 20, y(.375)/2);
+    textAlign(RIGHT, BOTTOM);
+    text("Speed: " + sets[currentSet].getInt("speed"), width - 20, y(.375)/2);
+    textAlign(CENTER, BOTTOM);
+    text("Set: " + sets[currentSet].getString("name"), x(3), y(.375) - 5);
+    textAlign(CENTER, CENTER);
+    fill(colorT);
     text(findString(0), x(1), y(1));
     text(findString(1), x(1), y(3));
     text(findString(2), x(0), y(2));
@@ -154,36 +184,59 @@ class Layout {
     text(findString(5), x(5), y(3));
     text(findString(6), x(4), y(2));
     text(findString(7), x(6), y(2));
+    center();
+  }
+  
+  void displayWithoutTop() {
+    center();
+    fill(color1);
+    noStroke();
+    //    rect(x-d, y-d, 1000, 1000);
+    fill(colorT);
+    //stroke(0);
+    ellipseMode(CENTER);
+    ellipse(x(1), y(2), 15, 15);
+    ellipse(x(5), y(2), 15, 15);
+    fill(colorT);
+    text(findString(0), x(1), y(1));
+    text(findString(1), x(1), y(3));
+    text(findString(2), x(0), y(2));
+    text(findString(3), x(2), y(2));
+    text(findString(4), x(5), y(1));
+    text(findString(5), x(5), y(3));
+    text(findString(6), x(4), y(2));
+    text(findString(7), x(6), y(2));
+    center();
   }
 
   void highlight(int inLoc) {
     rectMode(CENTER);
     noStroke();
-    fill(color(0, 191, 57));
+    fill(color3);
     switch (inLoc) {
     case 0:
-      rect(x(1), y(1), d, d, 5);
+      rect(x(1), y(1), dx, dy, 5);
       break;
     case 1:
-      rect(x(1), y(3), d, d, 5);
+      rect(x(1), y(3), dx, dy, 5);
       break;
     case 2:
-      rect(x(0), y(2), d, d, 5);
+      rect(x(0), y(2), dx, dy, 5);
       break;
     case 3:
-      rect(x(2), y(2), d, d, 5);
+      rect(x(2), y(2), dx, dy, 5);
       break;
     case 4:
-      rect(x(5), y(1), d, d, 5);
+      rect(x(5), y(1), dx, dy, 5);
       break;
     case 5:
-      rect(x(5), y(3), d, d, 5);
+      rect(x(5), y(3), dx, dy, 5);
       break;
     case 6:
-      rect(x(4), y(2), d, d, 5);
+      rect(x(4), y(2), dx, dy, 5);
       break;
     case 7:
-      rect(x(6), y(2), d, d, 5);
+      rect(x(6), y(2), dx, dy, 5);
       break;
     }
     rectMode(CORNER);
@@ -191,12 +244,12 @@ class Layout {
 
     float x(float num) {
       num -= 3;
-      return x + (num * d);
+      return x + (num * dx);
     }
 
     float y(float num) {
       num -= 1.5;
-      return y + (num * d);
+      return y + (num * dy);
     }
 
     String findString(int num) {

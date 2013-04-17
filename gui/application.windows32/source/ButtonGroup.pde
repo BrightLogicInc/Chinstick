@@ -23,7 +23,7 @@ class ButtonGroup {
     cursor = buttons[cursorLoc];
     noStroke();
     smooth();
-    fill(color(255, 166, 0));
+    fill(color1);
     //    rect(x-10, y-10, 1000, 100);
     int trackX = 0;
     for(int i = 0; i < buttons.length; i++){
@@ -32,10 +32,10 @@ class ButtonGroup {
     trackX = x - (trackX / 2);
     int trackY = y;
     for (int i = 0; i < buttons.length; i++) {
-      buttons[i].display(trackX, trackY, color(84, 14, 176));
+      buttons[i].display(trackX, trackY, color2);
       trackX += buttons[i].getWidth() + 5;
     }
-    cursor.display(color(0, 191, 57));
+    cursor.displayC(color3);
   }
 
   void mouseCursor() {
@@ -66,29 +66,43 @@ class ButtonGroup {
     x = width/2;
   }
 
+  int findStrokeLocation(char inChar){
+    int num = 0;
+    switch(inChar) {
+      case ('u'): num = 0; break;
+      case ('d'): num = 1; break;
+      case ('l'): num = 2; break;
+      case ('r'): num = 3; break;
+      case ('U'): num = 4; break;
+      case ('D'): num = 5; break;
+      case ('L'): num = 6; break;
+      case ('R'): num = 7; break;
+    }
+    return num;
+  }
+  
   int moveCursor() {
-    char in = ' ';
+    int index, val;
+    char type;
     if (port.available() > 0) { 
-      in = port.readChar();
-      if (in == 'r') {
-        cursorLoc++;
+      index = findStrokeLocation(port.readChar());
+      
+      String typeString = naviStrokes[index].getString("type");
+      type = typeString.charAt(0);
+      
+      String valString = naviStrokes[index].getString("value");
+      val = PApplet.parseInt(valString);
+      
+      if (type == 'x') {
+        cursorLoc += val;
       }
-      else if (in == 'l') {  
-        cursorLoc--;
-      }
-      else if (in == 'R') {
+      else if (type == 'c'){
         println(cursor.pressInt());
         return cursor.pressInt();
       }
-      //      else if (in == 'd') {
-      //        return 'd';
-      //      }
-      //      else if (in == 'u') {
-      //        return 'u';
-      //      }
-      else if (in == 'U') {
+      else if (type == 's'){
         sendProfile(0);
-        //mode = 0;
+        mode = 0;
         return 255;
       }
       cursorLoc = (cursorLoc + buttons.length) % buttons.length;
