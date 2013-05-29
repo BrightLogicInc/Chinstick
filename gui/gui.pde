@@ -56,7 +56,7 @@ int mode = START_MODE;  //mode stores the current mode of the gui
 Boolean done; //unused right now
 int type = 0; //within custom set?
 int strokeLoc = 0;
-int stdTextSize = 24;
+int stdTextSize = 40;
 
 color color1 = #80c8ff;  ////backgroundfill
 color color2 = #0090ff;  ////top and buttons
@@ -117,7 +117,7 @@ void setup() {
   frame.setResizable(true);
   
   //println(PFont.list());
-  f = createFont("Roboto Light", 24, true); //create font
+  f = createFont("Arial", stdTextSize, true); //create font
   textFont(f);  //set displaying font to the one we just created
   textAlign(CENTER, CENTER); //easiest to align text from the centers
   smooth();  //makes gui look nice
@@ -170,13 +170,13 @@ void draw() {
       strokeOptions.init(2, "Click Mouse", 2);
       strokeOptions.init(3, "Keyboard", 3);
 
-      moveOptions = new ButtonGroup(4, width/2, 50); //instantiate a button group for mouse movements
+      moveOptions = new ButtonGroup(4, width/2, (10 + (stdTextSize * 2))); //instantiate a button group for mouse movements
       moveOptions.init(0, "Mouse Up", 'u');
       moveOptions.init(1, "Mouse Down", 'd');
       moveOptions.init(2, "Mouse Left", 'l');
       moveOptions.init(3, "Mouse Right", 'r');
 
-      clickOptions = new ButtonGroup(3, width/2, 50); //instantiate a button group for clicks
+      clickOptions = new ButtonGroup(3, width/2, (10 + (stdTextSize * 2))); //instantiate a button group for clicks
       clickOptions.init(0, "Left Click", 'l');
       clickOptions.init(1, "Right Click", 'r');
       clickOptions.init(2, "Middle Click", 'm');
@@ -191,7 +191,7 @@ void draw() {
     }
     else if (mode == 2) {
       profiles = xml.getChildren("profile");
-      profilesButtons = new ButtonGroup(profiles.length, width/2, 50);
+      profilesButtons = new ButtonGroup(profiles.length, width/2, (10 + (stdTextSize * 2)));
       for (int i = 0; i < profilesButtons.getSize(); i++) {
         profilesButtons.init(  i, 
         profiles[i].getString("name"), 

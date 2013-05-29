@@ -30,6 +30,7 @@
   }
 
   int getWidth() {
+    newWidth();
     return keyWidth;
   }
   
@@ -41,8 +42,28 @@
     if(x < inX && inX < x + keyWidth && y < inY && inY < y + keyHeight) return true;
     else return false;
   }
+  
+  void newWidth(){
+    if(cover.length() == 1) keyWidth = keyHeight;
+    else if(cover.equals("  ")) keyWidth = 6*keyHeight + 5*keySpace;
+    else if(cover.equals("Tab")) keyWidth = 2*keyHeight + keySpace;
+    else if(cover.equals("Caps Lock")) keyWidth = 2*keyHeight + keySpace;
+    else if(cover.equals("Enter")) keyWidth = 2*keyHeight + keySpace;
+    else if(cover.equals("Shift")) keyWidth = 2*keyHeight + keySpace;
+    else if(cover.equals("Ctrl")) keyWidth = 2*keyHeight + keySpace;
+    else if(cover.equals("Done")) keyWidth = 2*keyHeight + keySpace;
+    else if(cover.equals("Bksp")) keyWidth = 2*keyHeight + keySpace;
+    else if(cover.equals("Left")) keyWidth = keyHeight;
+    else if(cover.equals("Down")) keyWidth = keyHeight;
+    else if(cover.equals("Right")) keyWidth = keyHeight;
+    else if(cover.equals("Up")) keyWidth = 3*keyHeight + 2*keySpace;
+    else if(cover.length() < 1) keyWidth = 0;
+    else keyWidth = int(textWidth(cover) + stdTextSize/2);
+  }
 
   void display(int inX, int inY, color inColor){
+    keyHeight = stdTextSize * 3 / 2;
+    newWidth();
     x = inX;
     y = inY;
     int tSize = stdTextSize;
@@ -60,6 +81,8 @@
   
   void display(color inColor) { //for cursor purposes
     int tSize = stdTextSize;
+    keyHeight = stdTextSize * 3 / 2;
+    newWidth();
     fill(inColor);
     rect( x, y , keyWidth, keyHeight, 5);
     fill(colorT);
@@ -74,6 +97,8 @@
   
   void displayC(color inColor) { //for cursor purposes
     int tSize = stdTextSize;
+    keyHeight = stdTextSize * 3 / 2;
+    newWidth();
     fill(inColor);
     rect( x, y , keyWidth, keyHeight, 5);
     fill(colorTC);

@@ -103,6 +103,7 @@ class Keyboard extends ButtonGroup{
     noStroke();
     smooth();
     fill(color1);
+    keySize = stdTextSize * 3 / 2;
     //    rect(x-10, y-10, 1000, 1000);
     int trackX = int(x - ((float(cols/2) + .5) * (keySize + keySpace)));
     int trackY = int(y - ((float(rows/2) + .5) * (keySize + keySpace)));

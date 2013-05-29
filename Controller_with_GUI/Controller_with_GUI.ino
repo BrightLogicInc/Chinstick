@@ -15,7 +15,7 @@
 //{lUp, lDown, lLeft, lRight, rUp, rDown, rLeft, rRight}
 
 const int joyStickPins[8] = {
-  8, 6, 7, 9, 3, 4, 2, 5};
+  5, 4, 2, 3, 9, 8, 6, 7 };
 const int ledPins[4] = {
   13, 12, 11, 10};
 
@@ -89,9 +89,9 @@ char modeKey = 'n'; //Stores current mode or set of Layouts
 int oldReading[8];
 int reading[8];
 
-const char KEY_INPUT_CODE = !,
-STROKE_INPUT_CODE = #,
-END_INPUT_CODE = $;
+const char KEY_INPUT_CODE = '!',
+STROKE_INPUT_CODE = '#',
+END_INPUT_CODE = '$';
 
 void setup()
 {
@@ -133,7 +133,7 @@ void readStick() //reads stick values and stores them in reading arrays
   for(int b = 0; b <= 7; b++)
   {
     oldReading[b] = reading[b]; //send past values back
-    reading[b] = digitalRead(joyStickPins[b]); //update with new ones
+    reading[b] = !(digitalRead(joyStickPins[b])); //update with new ones
   }
 }
 
@@ -165,10 +165,10 @@ void findType() //figures out what to do and sends to that function
       if((joyBankTypes[currentLayout][c] > 90) && (reading[c] == 1)) { //lowercase letter, and ON
         switch (joyBankTypes[currentLayout][c]) {
         case 's':  //setup
-          if(oldReading[c] == 0) //only goes once when the button is pressed, won't 
-          {                      //cycle if held
+          //if(oldReading[c] == 0) //only goes once when the button is pressed, won't 
+          //{                      //cycle if held
             doSetup(c);          //changes the Layout
-          }
+          //}
           break;
         case 'y':  //mouse y
           addMouseY(c);  //adds to the y portion of mouseToMove
@@ -230,9 +230,10 @@ void doSetup(int valLocation)  //changes Layout
 {
   int startTime = millis();
   int timePassed;
-  while (digitalRead(joyStickPins[valLocation]) == 1)
+  while (!digitalRead(joyStickPins[valLocation]) == 1)
   {
     timePassed = millis() - startTime;
+    delay(100);
     if (timePassed >= modeHoldTime) //if held will change whole mode
     {
       Keyboard.end();
@@ -253,6 +254,7 @@ void doSetup(int valLocation)  //changes Layout
     currentLayout = 0;
   } //loop around
   ledGo();
+  delay(100);
   Serial.write(currentLayout);
 }
 
@@ -262,11 +264,11 @@ void modeSwitch(int valLocation)
   {
     digitalWrite(ledPins[i], LOW);
   }
-  while(digitalRead(joyStickPins[valLocation])) //while setup stroke held
+  Serial.write(255); //alert GUI
+  while(!digitalRead(joyStickPins[valLocation])) //while setup stroke held
   {
     delay(250);
   }
-  Serial.write(255); //alert GUI
 
   long place = millis();
   int b = 0;
@@ -288,7 +290,7 @@ void modeSwitch(int valLocation)
 
     for(int i = 0; i < 8; i++) //check for stroke
     {
-      if (digitalRead(joyStickPins[i]) == HIGH)
+      if (!digitalRead(joyStickPins[i]) == HIGH)
       {
         Serial.write(directions[i]);
         delay(250);
@@ -507,7 +509,7 @@ void ledFlash(int a)
 //  {
 //    digitalWrite(ledPins[i], LOW);
 //  }
-//  while(digitalRead(joyStickPins[valLocation]))
+//  while(!digitalRead(joyStickPins[valLocation]))
 //  {
 //    delay(100);
 //  }
@@ -532,7 +534,7 @@ void ledFlash(int a)
 //    }
 //    for(int i = 0; i < 8; i++) //check for stroke
 //    {
-//      if (digitalRead(joyStickPins[i]) == HIGH)
+//      if (!digitalRead(joyStickPins[i]) == HIGH)
 //      {
 //        Serial.write(directions[i]);
 //        delay(250);
