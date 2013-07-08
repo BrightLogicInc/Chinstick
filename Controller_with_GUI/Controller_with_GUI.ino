@@ -15,7 +15,7 @@
 //{lUp, lDown, lLeft, lRight, rUp, rDown, rLeft, rRight}
 
 const int joyStickPins[8] = {
-  5, 4, 2, 3, 9, 8, 6, 7  );
+  2, 3, 4, 5, 6, 7, 8, 9  );
 const int ledPins[4] = {
   13, 12, 11, 10};
 
