@@ -15,7 +15,8 @@
 //{lUp, lDown, lLeft, lRight, rUp, rDown, rLeft, rRight}
 
 const int joyStickPins[8] = {
-  2, 3, 4, 5, 6, 7, 8, 9  );
+  5, 4, 2, 3, 9, 8, 6, 7  }; //red joysticks
+//  2, 3, 4, 5, 6, 7, 8, 9  };  //new default
 const int ledPins[4] = {
   13, 12, 11, 10};
 
@@ -91,7 +92,12 @@ int reading[8];
 
 const char KEY_INPUT_CODE = '!',
 STROKE_INPUT_CODE = '#',
-END_INPUT_CODE = '$';
+END_INPUT_CODE = '$',
+REGULAR_LAYOUT_CODE = '@',
+GUI_ATTENTION_CODE = '*';
+
+boolean shift = false;
+boolean ctrl = false;
 
 void setup()
 {
@@ -119,6 +125,7 @@ void setup()
 
   changeBank(normalTypes, normalVals); //set bank to initial mode and layout
   ledGo(); //display current layout
+
 }
 
 void loop()
@@ -238,7 +245,9 @@ void doSetup(int valLocation)  //changes Layout
     {
       Keyboard.end();
       Mouse.end();
+      
       modeSwitch(valLocation);
+      
       startTime = millis();
       currentLayout = -1;
       Keyboard.begin();
@@ -255,19 +264,31 @@ void doSetup(int valLocation)  //changes Layout
   } //loop around
   ledGo();
   delay(100);
+  Serial.write(REGULAR_LAYOUT_CODE);
   Serial.write(currentLayout);
 }
 
 void modeSwitch(int valLocation)
 {
+  offCount = 0;
   for(int i = 0; i < 4; i++)
   {
     digitalWrite(ledPins[i], LOW);
   }
-  Serial.write(255); //alert GUI
+  Serial.write(GUI_ATTENTION_CODE);
+  Serial.write(GUI_ATTENTION_CODE); //alert GUI TWICE!
   while(!digitalRead(joyStickPins[valLocation])) //while setup stroke held
   {
     delay(250);
+  }
+  
+  boolean done = true;
+  for(int i = 0; i < 20; i++){
+    if(Serial.read() == GUI_ATTENTION_CODE) {
+      done = false;
+      i = 50;
+    }
+    delay(100);
   }
 
   long place = millis();
@@ -275,31 +296,27 @@ void modeSwitch(int valLocation)
   digitalWrite(ledPins[0], HIGH);
   char directions[8] = {
     'u', 'd', 'l', 'r', 'U', 'D', 'L', 'R'    }; //for keyboard motion sent to gui
-  boolean done = false;
 
   while (done == false) //waiting to recieve new sets
   {
-    if((millis() - place) > 125) //cycle LEDs
-    {
-      digitalWrite(ledPins[b], LOW);
-      if (b == 3) b = 0;
-      else b++;
-      digitalWrite(ledPins[b], HIGH);
-      place = millis();
-    }
-
     for(int i = 0; i < 8; i++) //check for stroke
     {
       if (!digitalRead(joyStickPins[i]) == HIGH)
       {
+        reading[i] == 1;
         Serial.write(directions[i]);
-        delay(250);
+        delay(200);
         if(normalTypes[0][i] == 's'){
           delay(500);
           if(!Serial.available()){
+            delay(200);
+            Serial.write(directions[i]);
             done = true;
           }
         }
+      }
+      else {
+        reading[i] == 0;
       }
     }
 
@@ -310,7 +327,32 @@ void modeSwitch(int valLocation)
     }
 
     else if(inChar == KEY_INPUT_CODE){  //if sent a keystroke, controller acts as keyboard input
-      Keyboard.write(Serial.read());
+      int toType = Serial.read();
+      if(toType == 133) {
+        shift = !shift;
+      }
+      else if(toType == 128) {
+        ctrl = !ctrl;
+      }
+      else {
+        if(shift == true) {
+          Keyboard.press(133);
+          Keyboard.write(toType);
+          delay(10);
+          Keyboard.release(133);
+          shift = false;
+        }
+        else if(ctrl == true) {
+          Keyboard.press(128);
+          Keyboard.write(toType);
+          delay(10);
+          Keyboard.release(128);
+          ctrl = false;
+        }
+        else {
+          Keyboard.write(toType);
+        }
+      }
     }
     
     else if(inChar == END_INPUT_CODE){
@@ -318,6 +360,15 @@ void modeSwitch(int valLocation)
     }
   }
   currentLayout = 0;
+  
+  //    if((millis() - place) > 125) //cycle LEDs
+  //    {
+  //      digitalWrite(ledPins[b], LOW);
+  //      if (b == 3) b = 0;
+  //      else b++;
+  //      digitalWrite(ledPins[b], HIGH);
+  //      place = millis();
+  //    }
 }
 
 void readBank(){

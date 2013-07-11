@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 
 <data>
+
+	<serialInfo name="COM8" baud ="9600" ></serialInfo>	
+
 	<naviStroke type = "y" value = "1"></naviStroke>
 	<naviStroke type = "y" value = "-1"></naviStroke>
 	<naviStroke type = "x" value = "-1"></naviStroke>
@@ -9,6 +12,15 @@
 	<naviStroke type = "c" value = "1"></naviStroke>
 	<naviStroke type = "s" value = "1"></naviStroke>
 	<naviStroke type = "c" value = "1"></naviStroke>
+
+	<keyboardStroke type = "y" value = "1"></keyboardStroke>
+	<keyboardStroke type = "y" value = "-1"></keyboardStroke>
+	<keyboardStroke type = "x" value = "-1"></keyboardStroke>
+	<keyboardStroke type = "x" value = "1"></keyboardStroke>
+	<keyboardStroke type = "s" value = "1"></keyboardStroke>
+	<keyboardStroke type = "c" value = "176"></keyboardStroke>
+	<keyboardStroke type = "c" value = "178"></keyboardStroke>
+	<keyboardStroke type = "c" value = "1"></keyboardStroke>
 
 
 	<profile name ="Normal" numSets="4">

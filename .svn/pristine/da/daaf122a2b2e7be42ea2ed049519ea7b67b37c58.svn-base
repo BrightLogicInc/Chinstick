@@ -1,0 +1,3 @@
+Revert "changed default pins"
+
+This reverts commit fc88b1e90ebbe50698656a6dcc6801b28d1f12c7.
