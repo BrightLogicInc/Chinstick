@@ -1,0 +1,9 @@
+0000000000000000000000000000000000000000 9a845805ec3ad999a09908e9938f91026073bf39 Aaron Weinstein <aweinstein@brightlogic.com> 1369866412 -0400	commit: Further updates and fixes for new joystick
+9a845805ec3ad999a09908e9938f91026073bf39 a763f8908c83b5dba924e0f0437e6b8e7b6d97ae Aaron Weinstein <aweinstein@brightlogic.com> 1372782376 -0400	commit: Added how to files
+a763f8908c83b5dba924e0f0437e6b8e7b6d97ae fc88b1e90ebbe50698656a6dcc6801b28d1f12c7 Aaron Weinstein <aweinstein@brightlogic.com> 1372784864 -0400	commit: changed default pins
+fc88b1e90ebbe50698656a6dcc6801b28d1f12c7 a763f8908c83b5dba924e0f0437e6b8e7b6d97ae Aaron Weinstein <aweinstein@brightlogic.com> 1372784895 -0400	reset: moving to fc88b1e90ebbe50698656a6dcc6801b28d1f12c7^
+a763f8908c83b5dba924e0f0437e6b8e7b6d97ae 52390b6271b9d09e5bff66549f63f3d2b59e1127 Aaron Weinstein <aweinstein@brightlogic.com> 1372785653 -0400	commit: Updated default pins
+52390b6271b9d09e5bff66549f63f3d2b59e1127 8792f44bbf6e908a002dc8b3a7031816a7fd9442 Aaron Weinstein <aweinstein@brightlogic.com> 1372870149 -0400	commit: better instructions
+8792f44bbf6e908a002dc8b3a7031816a7fd9442 48110cbebb70da45d28599623480252c3f65dea7 Aaron Weinstein <aweinstein@brightlogic.com> 1373303906 -0400	commit: Clarified instructions
+48110cbebb70da45d28599623480252c3f65dea7 1ae6b23fd150cfb27f3656d73b6e33b2810440b0 Aaron Weinstein <aweinstein@brightlogic.com> 1373304001 -0400	commit: Unified pinouts
+1ae6b23fd150cfb27f3656d73b6e33b2810440b0 24f7853338a00b5cee78aab493a2932b6aef0a51 Aaron Weinstein <aweinstein@brightlogic.com> 1373574606 -0400	commit: Various connection fixes
